@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f2f4ef;
+  --surface: #fcfcfb;
+  --surface-2: #e9eee8;
+  --line: #d9e0d9;
+  --ink: #15201b;
+  --muted: #56645d;
+  --brand: #0b5d3f;
+  --brand-strong: #07432d;
+  --brand-soft: #d9ecE2;
+  --on-brand: #ffffff;
+  --income: #0f7a55;
+  --expense: #c9502a;
+  --income-text: #0b6b49;
+  --expense-text: #a93a1c;
+  --warn: #8a5a00;
+  --warn-soft: #fbf0d9;
+  --danger: #b4231d;
+  --danger-soft: #fbe6e3;
+  --good-soft: #dff1e7;
+}
+
+.dark {
+  --bg: #0d1311;
+  --surface: #161d1a;
+  --surface-2: #1f2925;
+  --line: #2b3732;
+  --ink: #eef2ef;
+  --muted: #a3b1aa;
+  --brand: #2fb985;
+  --brand-strong: #0f7a55;
+  --brand-soft: #173a2c;
+  --on-brand: #06231a;
+  --income: #2fb985;
+  --expense: #e8774f;
+  --income-text: #57cfa0;
+  --expense-text: #f09a79;
+  --warn: #eec26a;
+  --warn-soft: #3a2d10;
+  --danger: #f28b82;
+  --danger-soft: #3f1c19;
+  --good-soft: #173a2c;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-income: var(--income-text);
+  --color-expense: var(--expense-text);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-good-soft: var(--good-soft);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display-face);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* The signature surface: an engraved banknote. Fine concentric lines echo currency guilloche. */
+.note {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #f4fbf6;
+  background: linear-gradient(135deg, #0f7a55 0%, #0b5d3f 48%, #07432d 100%);
+}
+.note::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.16;
+  background:
+    repeating-radial-gradient(circle at 88% 22%, transparent 0 7px, #d7f5e6 7px 8px),
+    repeating-radial-gradient(circle at 6% 110%, transparent 0 9px, #d7f5e6 9px 10px);
+}
+.note::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  z-index: -1;
+  border: 1px solid rgb(215 245 230 / 0.35);
+  border-radius: calc(var(--note-radius, 1rem) - 6px);
+  pointer-events: none;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px; /* Below this, iOS zooms the page on focus. */
+}
+
+input[type='date'],
+input[type='datetime-local'],
+input[type='month'] {
+  min-width: 0;
+  max-width: 100%;
+  color-scheme: light;
+}
+.dark input[type='date'],
+.dark input[type='datetime-local'],
+.dark input[type='month'] {
+  color-scheme: dark;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.sheet-in { animation: sheet-up 0.2s ease-out; }
+.fade-in { animation: fade-in 0.15s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-in, .fade-in { animation: none; }
+}
