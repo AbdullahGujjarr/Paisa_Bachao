@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.paisabachao.app",
+      "sha256_cert_fingerprints": ["2C:09:24:36:E4:27:5A:6E:94:D8:E5:6C:22:39:11:2F:21:8D:5E:01:CE:E6:67:8E:CD:AA:3C:CD:F4:E9:1E:54"]
+    }
+  }
+]
