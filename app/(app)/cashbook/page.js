@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { BookOpen, Search, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, Minus, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { useApp, useWs } from '@/components/AppProvider';
 import { Button, Card, Empty, Field, Input, PageHeader, Select, Skeleton } from '@/components/ui';
 import TxRow from '@/components/TxRow';
@@ -50,8 +50,20 @@ export default function CashBook() {
   }, [data]);
 
   return (
-    <div>
-      <PageHeader title="Cash Book" subtitle="Every rupee in and out" action={perms.add && <Button onClick={() => openTx({ type: 'expense' })}>Add transaction</Button>} />
+    <div className={perms.add ? 'pb-20 lg:pb-0' : ''}>
+      <PageHeader title="Cash Book" subtitle="Every rupee in and out" action={perms.add && <div className="hidden lg:block"><Button onClick={() => openTx({ type: 'expense' })}>Add transaction</Button></div>} />
+      {perms.add && (
+        <div className="fixed inset-x-0 z-20 px-3 lg:hidden" style={{ bottom: 'calc(4.75rem + env(safe-area-inset-bottom))' }}>
+          <div className="mx-auto grid max-w-lg grid-cols-2 gap-2">
+            <button type="button" onClick={() => openTx({ type: 'income' })} className="flex min-h-13 items-center justify-center gap-2 rounded-2xl bg-[#0b6b49] text-base font-bold text-white shadow-lg active:opacity-85">
+              <Plus size={22} strokeWidth={3} aria-hidden /> Income
+            </button>
+            <button type="button" onClick={() => openTx({ type: 'expense' })} className="flex min-h-13 items-center justify-center gap-2 rounded-2xl bg-[#b03a1b] text-base font-bold text-white shadow-lg active:opacity-85">
+              <Minus size={22} strokeWidth={3} aria-hidden /> Expense
+            </button>
+          </div>
+        </div>
+      )}
       <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-3">
         {[['Cash in', data?.income, 'text-income', ''], ['Cash out', data?.expense, 'text-expense', ''], ['Balance', (data?.income || 0) - (data?.expense || 0), '', 'col-span-2 md:col-span-1']].map(([label, value, color, span]) => (
           <Card key={label} className={`!p-3 ${span}`}>
