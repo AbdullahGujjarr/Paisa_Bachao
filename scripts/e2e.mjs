@@ -213,37 +213,43 @@ let shared;
 const sw = (p) => `/api/w/${shared}/${p}`;
 const tokenOf = (url) => url.split('/invite/')[1];
 await check('personal workspaces cannot invite anyone', async () => {
-  assert.equal((await ali.post(w('invites'), { role: 'editor' })).status, 400);
+  assert.equal((await ali.post(w('invites'), {})).status, 400);
 });
 await check('owner creates a shared workspace and members join', async () => {
   shared = (await ali.post('/api/workspaces', { name: 'Family', currency: 'PKR' })).data.id;
-  const one = await ali.post(sw('invites'), { role: 'editor' });
+  const one = await ali.post(sw('invites'), {});
   assert.equal((await sara.get(`/api/invites/${tokenOf(one.data.url)}`)).data.workspace, 'Family');
   assert.equal((await sara.post(`/api/invites/${tokenOf(one.data.url)}`, { accept: true })).status, 200);
-  const two = await ali.post(sw('invites'), { role: 'viewer' });
+  const two = await ali.post(sw('invites'), {});
   assert.equal((await omar.post(`/api/invites/${tokenOf(two.data.url)}`, { accept: true })).status, 200);
   assert.equal((await ali.get(sw('members'))).data.length, 3);
 });
 await check('email invites only work for that email', async () => {
-  const inv = await ali.post(sw('invites'), { email: zara.email, role: 'editor' });
+  const inv = await ali.post(sw('invites'), { email: zara.email });
   assert.equal((await hina.post(`/api/invites/${tokenOf(inv.data.url)}`, { accept: true })).status, 403);
 });
 await check('shared members still cannot see personal workspaces', async () => {
   assert.equal((await sara.get(w('summary'))).status, 404);
   assert.equal((await ali.get(`/api/w/${sara.personal}/summary`)).status, 404);
 });
-await check('viewers can read but not write', async () => {
-  assert.equal((await omar.get(sw('summary'))).status, 200);
-  assert.equal((await omar.post(sw('transactions'), tx())).status, 403);
-  assert.equal((await omar.post(sw('invites'), {})).status, 403);
-});
-await check('owner permission switches are enforced', async () => {
+await check('every member can edit and delete any transaction, with no restriction', async () => {
   const t = (await sara.post(sw('transactions'), tx({ name: 'Sara lunch' }))).data;
-  assert.equal((await ali.patch(sw(`members/${sara.id}`), { canDelete: false })).status, 200);
-  assert.equal((await sara.del(sw(`transactions/${t._id}`))).status, 403);
   assert.equal((await sara.patch(sw(`transactions/${t._id}`), { amount: 600 })).status, 200);
-  await ali.patch(sw(`members/${sara.id}`), { canDelete: true });
-  assert.equal((await sara.patch(sw(`members/${omar.id}`), { role: 'editor' })).status, 403);
+  const shared = (await ali.post(sw('transactions'), tx({ name: 'Owner entry', amount: 100 }))).data;
+  const edited = await omar.patch(sw(`transactions/${shared._id}`), { amount: 200 });
+  assert.equal(edited.status, 200, JSON.stringify(edited.data));
+  assert.equal(edited.data.amount, 200);
+  assert.equal((await sara.patch(sw(`transactions/${shared._id}`), { name: 'Edited by Sara' })).status, 200);
+  assert.equal((await omar.del(sw(`transactions/${shared._id}`))).status, 200);
+  const omars = (await omar.post(sw('transactions'), tx({ name: 'Omar entry', amount: 50 }))).data;
+  assert.equal((await ali.del(sw(`transactions/${omars._id}`))).status, 200);
+  const items = (await ali.get(sw('activity'))).data.items.map((a) => a.summary);
+  assert.ok(items.some((s) => s.startsWith('Omar deleted')), items.join('|'));
+});
+await check('only the owner manages membership', async () => {
+  assert.equal((await omar.post(sw('invites'), {})).status, 403);
+  assert.equal((await sara.del(sw(`members/${omar.id}`))).status, 403);
+  assert.equal((await sara.del(`/api/w/${shared}`)).status, 403);
 });
 await check('activity records who did what', async () => {
   const items = (await ali.get(sw('activity'))).data.items.map((a) => a.summary);
@@ -251,7 +257,7 @@ await check('activity records who did what', async () => {
   assert.ok(items.some((s) => s.startsWith('Sara edited')));
 });
 await check('the 4-member limit holds under simultaneous accepts', async () => {
-  const link = await ali.post(sw('invites'), { role: 'editor' });
+  const link = await ali.post(sw('invites'), {});
   const token = tokenOf(link.data.url);
   const results = await Promise.all([zara, hina, eve].map((c) => c.post(`/api/invites/${token}`, { accept: true })));
   const ok = results.filter((r) => r.status === 200).length;

@@ -43,7 +43,6 @@ function CreateSheet({ onClose }) {
 function Invite() {
   const { ws, toast, workspace, refreshWorkspace } = useApp();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('editor');
   const [link, setLink] = useState('');
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -52,7 +51,7 @@ function Invite() {
     e.preventDefault();
     setBusy(true);
     try {
-      const res = await api(ws('invites'), { method: 'POST', body: { email, role } });
+      const res = await api(ws('invites'), { method: 'POST', body: { email } });
       setLink(res.url);
       toast(res.emailed ? `Invitation sent to ${email}` : 'Invitation link created');
       setEmail('');
@@ -75,12 +74,8 @@ function Invite() {
   return (
     <div className="mt-4 border-t border-line pt-3">
       <h3 className="mb-2 font-semibold">Invite someone</h3>
-      <form onSubmit={send} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
+      <form onSubmit={send} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <Input type="email" aria-label="Email address" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email, or leave empty for a link" />
-        <Select aria-label="Role" value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="editor">Editor</option>
-          <option value="viewer">Viewer</option>
-        </Select>
         <Button type="submit" loading={busy}>{email ? 'Send invite' : <><Link2 size={16} aria-hidden /> Get link</>}</Button>
       </form>
       {link && (
@@ -93,7 +88,7 @@ function Invite() {
         <ul className="mt-2 divide-y divide-line text-sm">
           {invites.map((i) => (
             <li key={i._id} className="flex items-center justify-between gap-2 py-1">
-              <span className="min-w-0 truncate">{i.email || 'Open link'} <span className="text-muted">({i.role})</span></span>
+              <span className="min-w-0 truncate">{i.email || 'Open link'}</span>
               <button type="button" className="min-h-9 font-semibold text-danger" onClick={() => revoke(i._id)}>Revoke</button>
             </li>
           ))}
@@ -105,14 +100,6 @@ function Invite() {
 
 function Member({ m }) {
   const { ws, perms, user, toast, refreshWorkspace, refreshAccount, fmtDate } = useApp();
-  const patch = async (body) => {
-    try {
-      await api(ws(`members/${m.id}`), { method: 'PATCH', body });
-      refreshWorkspace();
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  };
   const remove = async () => {
     const self = m.id === user.id;
     if (!window.confirm(self ? 'Leave this shared budget?' : `Remove ${m.name}?`)) return;
@@ -133,23 +120,9 @@ function Member({ m }) {
           <p className="truncate font-semibold">{m.name}{m.id === user.id ? ' (you)' : ''}</p>
           <p className="truncate text-xs text-muted">{m.lastActivity ? `${m.lastActivity.summary}, ${fmtDate(m.lastActivity.at, 'dd MMM')}` : m.email}</p>
         </div>
-        {canManage ? (
-          <Select aria-label={`Role for ${m.name}`} value={m.role} onChange={(e) => patch({ role: e.target.value })} className="!w-28 shrink-0">
-            <option value="editor">Editor</option>
-            <option value="viewer">Viewer</option>
-          </Select>
-        ) : <Badge tone={m.role === 'owner' ? 'good' : 'neutral'}>{m.role}</Badge>}
+        <Badge tone={m.role === 'owner' ? 'good' : 'neutral'}>{m.role === 'owner' ? 'Owner' : 'Member'}</Badge>
         {m.role !== 'owner' && (canManage || m.id === user.id) && <IconButton label={m.id === user.id ? 'Leave' : `Remove ${m.name}`} onClick={remove}><UserMinus size={18} aria-hidden /></IconButton>}
       </div>
-      {canManage && m.role === 'editor' && (
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 pl-[3.25rem] text-sm">
-          {[['canAdd', 'Add'], ['canEdit', 'Edit'], ['canDelete', 'Delete']].map(([key, label]) => (
-            <label key={key} className="flex min-h-8 items-center gap-1.5">
-              <input type="checkbox" className="size-4 accent-[var(--brand)]" checked={m[key]} onChange={(e) => patch({ [key]: e.target.checked })} /> {label}
-            </label>
-          ))}
-        </div>
-      )}
     </li>
   );
 }
@@ -242,7 +215,7 @@ export default function Workspaces() {
 
   return (
     <div>
-      <PageHeader title="Shared budgets" subtitle="Manage money together, with up to 4 people" action={<Button onClick={() => setCreating(true)}><Plus size={16} aria-hidden /> New</Button>} />
+      <PageHeader title="Shared budgets" subtitle="Up to 4 people, and everyone can add, edit and delete transactions" action={<Button onClick={() => setCreating(true)}><Plus size={16} aria-hidden /> New</Button>} />
       <div className="no-scrollbar mb-3 flex gap-2 overflow-x-auto pb-1">
         {workspaces.map((w) => (
           <button key={w.id} type="button" onClick={() => switchWorkspace(w.id)} aria-pressed={w.id === wid} className={`flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold ${w.id === wid ? 'border-brand bg-brand text-on-brand' : 'border-line bg-surface'}`}>

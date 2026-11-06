@@ -1,20 +1,6 @@
-import { wsRoute, readJson, assertId, ApiError } from '@/lib/api';
-import { memberSchema } from '@/lib/schemas';
-import { dropFromRoom, logAndBroadcast, notifyUser } from '@/lib/realtime';
+import { wsRoute, assertId, ApiError } from '@/lib/api';
+import { dropFromRoom, logAndBroadcast } from '@/lib/realtime';
 import { Workspace, WorkspaceMember } from '@/models';
-
-export const PATCH = wsRoute('manage', async ({ req, user, params, wid }) => {
-  const uid = assertId(params.uid);
-  const data = memberSchema.parse(await readJson(req));
-  const target = await WorkspaceMember.findOne({ workspace: wid, user: uid }).populate('user', 'name');
-  if (!target) throw new ApiError(404, 'Member not found.');
-  if (target.role === 'owner') throw new ApiError(400, "The owner's access cannot be changed.");
-  Object.assign(target, data);
-  await target.save();
-  await logAndBroadcast({ wid, user, action: 'updated', entity: 'member', entityId: uid, summary: `${user.name} changed ${target.user.name}'s permissions` });
-  notifyUser(uid, 'membership', { workspaceId: wid });
-  return { ok: true };
-});
 
 // Owners can remove anyone else. Any other member can remove themselves, which is leaving.
 export const DELETE = wsRoute('read', async ({ user, member, params, wid }) => {

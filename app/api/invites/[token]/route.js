@@ -17,7 +17,6 @@ export const GET = route(async ({ params, user }) => {
   return {
     workspace: invite.workspace.name,
     invitedBy: invite.invitedBy?.name,
-    role: invite.role,
     memberCount: invite.workspace.memberCount,
     isFull: invite.workspace.memberCount >= MAX_MEMBERS,
     alreadyMember: Boolean(await WorkspaceMember.exists({ workspace: invite.workspace._id, user: user._id })),
@@ -42,7 +41,7 @@ export const POST = route(async ({ req, params, user }) => {
   const seat = await Workspace.updateOne({ _id: wid, memberCount: { $lt: MAX_MEMBERS } }, { $inc: { memberCount: 1 } });
   if (!seat.modifiedCount) throw new ApiError(409, `This workspace already has ${MAX_MEMBERS} members.`);
   try {
-    await WorkspaceMember.create({ workspace: wid, user: user._id, role: invite.role });
+    await WorkspaceMember.create({ workspace: wid, user: user._id, role: 'editor' });
   } catch (err) {
     await Workspace.updateOne({ _id: wid }, { $inc: { memberCount: -1 } });
     throw err;

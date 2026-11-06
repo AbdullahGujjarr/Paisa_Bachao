@@ -67,7 +67,7 @@ Render's free plan sleeps when idle, which pauses the recurring-transaction and 
 - **Budgets:** unlimited, with alerts at 50%, 75%, 90% and over budget, plus a daily allowance and planned-against-actual marker
 - **Analytics:** daily, weekly, monthly, yearly and custom charts, averages, records and insights
 - **Receipt scanning:** photos and PDFs become an editable table, and nothing is saved until you confirm
-- **Shared budgets:** up to 4 people, with roles, permissions, live updates, an activity log and who-owes-whom settlement
+- **Shared budgets:** up to 4 people. Every member can add, edit and delete any transaction, with live updates, an activity log and who-owes-whom settlement. The owner manages who is in the budget.
 - **Assistant:** answers questions from your real data and never changes anything without confirmation
 - **Planning:** savings goals, Udhaar, subscriptions, recurring entries, reminders and a calendar view
 - **Forecasts:** month-end spending prediction, safe daily limit and unusual-spending alerts

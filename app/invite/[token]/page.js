@@ -47,7 +47,7 @@ export default function Invite({ params }) {
           <>
             <h1 className="mt-3 font-display text-2xl font-extrabold">Join {info.workspace}</h1>
             <p className="mt-2 text-sm text-muted">
-              {info.invitedBy} invited you as {info.role === 'viewer' ? 'a viewer' : 'an editor'}. Only this shared budget is visible to its members. Your personal finances stay private.
+              {info.invitedBy} invited you. Every member can add, edit and delete transactions in this shared budget. Your personal finances stay private.
             </p>
             {info.alreadyMember ? (
               <Button className="mt-5 w-full" onClick={() => router.push('/dashboard')}>You are already a member</Button>

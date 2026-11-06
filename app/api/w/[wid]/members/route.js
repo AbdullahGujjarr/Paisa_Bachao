@@ -16,9 +16,6 @@ export const GET = wsRoute('read', async ({ wid }) => {
       email: m.user.email,
       image: m.user.image,
       role: m.role,
-      canAdd: m.canAdd,
-      canEdit: m.canEdit,
-      canDelete: m.canDelete,
       lastActivity: last.find((l) => String(l._id) === String(m.user._id)) || null,
     }));
 });
